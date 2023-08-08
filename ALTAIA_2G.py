@@ -8,12 +8,11 @@ from datetime import date
 import warnings
 import RemoveDuplcates
 warnings.simplefilter("ignore")
-import ImportDF
 
 def processArchive():
-    fields = ['eNodeB','Cell',' TIM_NB_IOT_DISP_COUNTER_TOTAL (%)',' TIM_NB_IOT_VOLUME_DADOS_DLUL (KB)']
-    fields2 = ['SITE','CELL','DISP','VOLUME']
-    folder = 'ALTAIA_4G-IOT'
+    fields = ['Region','BTS','Cell','Band',' TIM_DISP_COUNTER_TOTAL (%)',' TIM_VOLUME_DADOS_DLUL_ALLOP (KB)']
+    fields2 = ['REGIONAL','SITE','CELL','FREQ CELL','DISP','VOLUME']
+    folder = 'ALTAIA_2G'
 
     pathImport = '/import/ALTAIA/' + folder
     pathImportSI = os.getcwd() + pathImport
@@ -43,16 +42,17 @@ def processArchive():
     frameSI.loc[(frameSI['DISP'].astype(float) > 0),['STATUS']] = 1
     frameSI.loc[(frameSI['DISP'].astype(float) > 0) & (frameSI['VOLUME'].astype(float) > 0),['STATUS']] = 2
     frameSI = RemoveDuplcates.processarchive(frameSI,'CELL','STATUS')
-    frameSI['STATUS'] = frameSI['STATUS'].map({0:'INATIVO[IoT]',1:'ATIVO SEM TRAFEGO[IoT]',2:'ATIVO[IoT]'})
-    frameSI['Tec'] = '4G[IoT]'
-    frameSI['FREQ CELL'] = ''
-    #frameSI['CELL'] = frameSI['CELL'].str[:-2] + frameSI['CELL'].str[-1:]
+    frameSI['STATUS'] = frameSI['STATUS'].map({0:'INATIVO',1:'ATIVO SEM TRAFEGO',2:'ATIVO'})
+    frameSI['Tec'] = '2G'
+    frameSI.drop(frameSI[frameSI['STATUS'] == 'INATIVO'].index, inplace=True)
 
+    frameSI.drop(frameSI[(frameSI['REGIONAL'] != 'TSP') & (frameSI['SITE'].str[-3:] != '_SP')].index, inplace=True)
+    frameSI.loc[frameSI['FREQ CELL'] == '[UNK]',['FREQ CELL']] = ''
+    
 
+    
     frameSI = frameSI.drop_duplicates()
     frameSI = frameSI.reset_index(drop=True)
     frameSI.to_csv(csv_path,index=False,header=True,sep=';')
-
-    
 
 #Baixar arquivo como csv, alterAR CODIGO

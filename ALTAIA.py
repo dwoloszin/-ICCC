@@ -8,20 +8,19 @@ from datetime import date
 import warnings
 import RemoveDuplcates
 warnings.simplefilter("ignore")
-import ImportDF
 
 def processArchive():
-    fields = ['eNodeB','Cell',' TIM_NB_IOT_DISP_COUNTER_TOTAL (%)',' TIM_NB_IOT_VOLUME_DADOS_DLUL (KB)']
-    fields2 = ['SITE','CELL','DISP','VOLUME']
-    folder = 'ALTAIA_4G-IOT'
+    fields = ['Cell',' TIM_DISP_COUNTER_TOTAL (%)',' TIM_VOLUME_DADOS_DLUL_ALLOP (KB)',' TIM_TRAFEGO_VOZ_ALLOP (E)']
+    fields2 = ['CELL','DISP','VOLUME','TRAFEGO']
+    folder = 'ALTAIA'
 
-    pathImport = '/import/ALTAIA/' + folder
+    pathImport = '/import/' + folder
     pathImportSI = os.getcwd() + pathImport
     #print (pathImportSI)
     archiveName = pathImport[11:len(pathImport)]
     #print (archiveName)
     script_dir = os.path.abspath(os.path.dirname(sys.argv[0]) or '.')
-    csv_path = os.path.join(script_dir, 'export/'+'ALTAIA'+'/'+folder+'.csv')
+    csv_path = os.path.join(script_dir, 'export/'+folder+'/'+folder+'.csv')
     #print ('loalding files...\n')
     all_filesSI = glob.glob(pathImportSI + "/*.csv")
     all_filesSI.sort(key=lambda x: os.path.getmtime(x), reverse=True)
@@ -40,19 +39,15 @@ def processArchive():
 
     #Removing duplicates, keep last
     frameSI.insert(len(frameSI.columns),'STATUS',0)
-    frameSI.loc[(frameSI['DISP'].astype(float) > 0),['STATUS']] = 1
-    frameSI.loc[(frameSI['DISP'].astype(float) > 0) & (frameSI['VOLUME'].astype(float) > 0),['STATUS']] = 2
+    frameSI.loc[(frameSI['DISP'].astype(float) > 0) | ((frameSI['VOLUME'].astype(float) > 0) | (frameSI['TRAFEGO'].astype(float) > 0)),['STATUS']] = 1
+    
     frameSI = RemoveDuplcates.processarchive(frameSI,'CELL','STATUS')
-    frameSI['STATUS'] = frameSI['STATUS'].map({0:'INATIVO[IoT]',1:'ATIVO SEM TRAFEGO[IoT]',2:'ATIVO[IoT]'})
-    frameSI['Tec'] = '4G[IoT]'
-    frameSI['FREQ CELL'] = ''
-    #frameSI['CELL'] = frameSI['CELL'].str[:-2] + frameSI['CELL'].str[-1:]
+    frameSI['STATUS'] = frameSI['STATUS'].map({0:'SEM TRAFEGO',1:'ATIVO'})
+    
 
-
+    
     frameSI = frameSI.drop_duplicates()
     frameSI = frameSI.reset_index(drop=True)
     frameSI.to_csv(csv_path,index=False,header=True,sep=';')
-
-    
 
 #Baixar arquivo como csv, alterAR CODIGO

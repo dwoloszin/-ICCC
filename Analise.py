@@ -14,21 +14,35 @@ def processArchive():
   
 
 
-  Ref1 = 'CS_ATIVO_SEM_TRAFEGO (STATUS)'
-  MERGE.loc[(MERGE['REF'] == Ref1) &
-            (MERGE['STATUS_MicroStrategy'].isna() | MERGE['STATUS_IoT'].isna())&
-            (MERGE['CS_STATUS_SI'] == 'In Service'),['Analise TIM']] = 'Alterar CS_STATUS para Deactivated ,alteracao de ID para 4G-, ou desativacao de celula'
+  STATUS = MERGE['STATUS'].unique()
 
-  MERGE.loc[(MERGE['REF'] == Ref1) &
-            (~MERGE['STATUS_MicroStrategy'].isna() | ~MERGE['STATUS_IoT'].isna())&
-            (MERGE['CS_STATUS_SI'] == 'In Service'),['Analise TIM']] = 'N/A [Celula c/ Trafego]'
+  for STATUS1 in STATUS:
+    MERGE.loc[(MERGE['STATUS'] == STATUS1) &
+              (MERGE['STATUS_MicroStrategy'].isna() | MERGE['STATUS_ALTAIA'].isna())&
+              (MERGE['CS_STATUS_SI'] == 'In Service'),['Analise TIM']] = 'Alterar CS_STATUS para Deactivated ,alteracao de ID para 4G-, ou desativacao de celula'
 
-  MERGE.loc[(MERGE['REF'] == Ref1) &
-            (MERGE['STATUS_MicroStrategy'].isna() | MERGE['STATUS_IoT'].isna())&
-            (MERGE['CS_STATUS_SI'].isna()),['Analise TIM']] = 'N/A [Celula s/ trafego sem relacionamento SI]'
+    MERGE.loc[(MERGE['STATUS'] == STATUS1) &
+              (~MERGE['STATUS_MicroStrategy'].isna() | ~MERGE['STATUS_ALTAIA'].isna())&
+              (MERGE['CS_STATUS_SI'] == 'In Service'),['Analise TIM']] = 'N/A [Celula c/ Trafego]'
+
+    MERGE.loc[(MERGE['STATUS'] == STATUS1) &
+              (MERGE['STATUS_MicroStrategy'].isna() | MERGE['STATUS_ALTAIA'].isna())&
+              (MERGE['CS_STATUS_SI'].isna()),['Analise TIM']] = 'N/A [Celula s/ trafego sem relacionamento SI]'
+    
+    MERGE.loc[(MERGE['STATUS'] == STATUS1) &
+              (MERGE['STATUS_MicroStrategy'].isna() | MERGE['STATUS_ALTAIA'].isna())&
+              (MERGE['CS_STATUS_SI'] == 'In Service')&
+              (~MERGE['STATUS_MicroStrategy_Mobile'].isna()),['Analise TIM']] = 'Alterar CS_STATUS para Deactivated ,alteracao de ID para 4G-, se mobile <> de 4G- Deactivated no mobile tbm'
+
+    MERGE.loc[(MERGE['STATUS'] == STATUS1) &
+              (~MERGE['STATUS_MicroStrategy'].isna() | ~MERGE['STATUS_ALTAIA'].isna())&
+              (MERGE['CS_STATUS_SI'] != 'In Service'),['Analise TIM']] = 'Alterar CS_STATUS para In Service [Celula c/ Trafego]'
+
+
+
+
   
 
-  
 
 
 
