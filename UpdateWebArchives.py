@@ -23,4 +23,9 @@ def updateArchives():
   save_path = "import/ALTAIA/CELL"  # Change this to your desired save path
   download_csv_files(folder_path,prefix,save_path)
 
+  folder_path = "nbulkload/" #web
+  prefix = "dump_tpt_cellsector_" #archivename
+  save_path = "import/nbulkload"  # Change this to your desired save path
+  download_csv_files(folder_path,prefix,save_path)
+
 
