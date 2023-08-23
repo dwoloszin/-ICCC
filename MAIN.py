@@ -50,7 +50,7 @@ MO.Name = 'Mobile'
 MO = ImportDF.change_columnsName(MO)
 
 
-fieldsRSVIVO = ['SITE','CELL']
+fieldsRSVIVO = ['SITE']
 pathToImportRSVIVO = '\export\DUMP\RSVIVO'
 RSVIVO = ImportDF.processArchive2(fieldsRSVIVO,pathToImportRSVIVO)
 #MO = ShortName.tratarShortNumber(MO,'NAME')
@@ -67,7 +67,7 @@ MS_2 = ImportDF.change_columnsName(MS_2)
 
 
 
-fieldsAltaia = ['SITE','CELL','STATUS','VOLUME','TRAFEGO_VOZ']
+fieldsAltaia = ['SITE','CELL','STATUS','VOLUME']
 pathToImportAltaia = '\export\ALTAIA'
 ALTAIA = ImportDF.processArchive2(fieldsAltaia,pathToImportAltaia)
 ALTAIA.Name = 'ALTAIA'
@@ -120,7 +120,7 @@ frameSI = pd.merge(frameSI,BLACKLIST, how='left',left_on=['CELLSECTOR'],right_on
 frameSI = frameSI.drop(['CellName_BLACKLIST'], axis=1)
 
 frameSI = pd.merge(frameSI,RSVIVO, how='left',left_on=['SITE_NAME'],right_on=['SITE_RSVIVO'])
-frameSI = frameSI.drop(['SITE_RSVIVO'], axis=1)
+#frameSI = frameSI.drop(['SITE_RSVIVO'], axis=1)
 
 
 
