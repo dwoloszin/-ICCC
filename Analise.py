@@ -38,6 +38,8 @@ def processArchive():
               (~MERGE['STATUS_MicroStrategy'].isna() | ~MERGE['STATUS_ALTAIA'].isna())&
               (MERGE['CS_STATUS_SI'] != 'In Service'),['Analise TIM']] = 'Alterar CS_STATUS para In Service [Celula c/ Trafego]'
 
+    MERGE.loc[(MERGE['STATUS'] == STATUS1) &
+              (~MERGE['CELL_RSVIVO'].isna() & (MERGE['CELLSECTOR'] != MERGE['CELL_RSVIVO'])),['Analise TIM']] = 'RS Cadastro obrigatorio so de 2600 demais freq nao necessario'
 
 
 

@@ -47,3 +47,24 @@ def processArchive2(fields,pathImport):
 
     return frameSI
 
+
+
+
+
+def ImportDF_Xlsx(fields,fields2, pathImport,sheetname,skip_rows):
+  pathImportSI = os.getcwd() + pathImport
+  archiveName = pathImport[8:len(pathImport)]
+  #print ('loalding files...\n')
+  all_filesSI = glob.glob(pathImportSI + "/*.xlsx")
+  all_filesSI.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+  li = []
+  df = pd.DataFrame()
+  for filename in all_filesSI:
+    #data = pd.read_excel(filename,skiprows=27,sheet_name = 'DUMP_5G_DSS', nrows=40,usecols = 'A:AC')
+    data = pd.read_excel(filename,skiprows=skip_rows,sheet_name = sheetname,usecols = fields,na_filter= False)
+    frameSI = df.append(data,ignore_index=True)
+    frameSI = frameSI[fields] # ordering labels 
+  frameSI.columns = fields2
+  frameSI = frameSI.drop_duplicates()
+  frameSI = frameSI.reset_index(drop=True)
+  return frameSI 

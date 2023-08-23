@@ -13,6 +13,7 @@ import ALTAIA_5G
 import ALTAIA_4G_IOT
 from UpdateWebArchives import updateArchives
 import Analise
+import DUMP_4G_VIVO_RS
 
 script_dir = os.path.abspath(os.path.dirname(sys.argv[0]) or '.')
 csv_path = os.path.join(script_dir, 'export/'+'MERGE'+'.csv')
@@ -24,6 +25,7 @@ ALTAIA_3G.processArchive()
 ALTAIA_4G.processArchive()
 ALTAIA_5G.processArchive()
 ALTAIA_4G_IOT.processArchive()
+DUMP_4G_VIVO_RS.processArchive()
 
 
 
@@ -40,7 +42,7 @@ SI = ImportDF.processArchive2(fields,pathToImportSI)
 SI.Name = 'SI'
 SI = ImportDF.change_columnsName(SI)
 
-fields2 = ['NAME','PROVISIONSTATUS','IMPLEMENTATIION_STATUS']
+fields2 = ['NAME','PROVISIONSTATUS','IMPLEMENTATIION_STATUS','ANF','MUNICIPIO']
 pathToImportMO = '\import\Mobile'
 MO = ImportDF.processArchive2(fields2,pathToImportMO)
 #MO = ShortName.tratarShortNumber(MO,'NAME')
@@ -48,13 +50,24 @@ MO.Name = 'Mobile'
 MO = ImportDF.change_columnsName(MO)
 
 
-MS = MS.processArchive()
-MS.Name = 'MicroStrategy'
-MS = ImportDF.change_columnsName(MS)
+fieldsRSVIVO = ['SITE','CELL']
+pathToImportRSVIVO = '\export\DUMP\RSVIVO'
+RSVIVO = ImportDF.processArchive2(fieldsRSVIVO,pathToImportRSVIVO)
+#MO = ShortName.tratarShortNumber(MO,'NAME')
+RSVIVO.Name = 'RSVIVO'
+RSVIVO = ImportDF.change_columnsName(RSVIVO)
 
 
 
-fieldsAltaia = ['SITE','CELL','STATUS']
+
+
+MS_2 = MS.processArchive()
+MS_2.Name = 'MicroStrategy'
+MS_2 = ImportDF.change_columnsName(MS_2)
+
+
+
+fieldsAltaia = ['SITE','CELL','STATUS','VOLUME','TRAFEGO_VOZ']
 pathToImportAltaia = '\export\ALTAIA'
 ALTAIA = ImportDF.processArchive2(fieldsAltaia,pathToImportAltaia)
 ALTAIA.Name = 'ALTAIA'
@@ -94,7 +107,7 @@ frameSI = frameSI.drop(['CS_NAME_SI'], axis=1)
 frameSI = pd.merge(frameSI,MO, how='left',left_on=['MOBILESITE'],right_on=['NAME_Mobile'])
 frameSI = frameSI.drop(['NAME_Mobile'], axis=1)
 
-frameSI = pd.merge(frameSI,MS, how='left',left_on=['CELLSECTOR'],right_on=['CELL_MicroStrategy'])
+frameSI = pd.merge(frameSI,MS_2, how='left',left_on=['CELLSECTOR'],right_on=['CELL_MicroStrategy'])
 frameSI = frameSI.drop(['CELL_MicroStrategy'], axis=1)
 
 frameSI = pd.merge(frameSI,ALTAIA, how='left',left_on=['CELLSECTOR'],right_on=['CELL_ALTAIA'])
@@ -106,10 +119,15 @@ frameSI = frameSI.drop(['CELL_SECTOR_NAME_BULKLOAD_CELLSECTOR'], axis=1)
 frameSI = pd.merge(frameSI,BLACKLIST, how='left',left_on=['CELLSECTOR'],right_on=['CellName_BLACKLIST'])
 frameSI = frameSI.drop(['CellName_BLACKLIST'], axis=1)
 
+frameSI = pd.merge(frameSI,RSVIVO, how='left',left_on=['SITE_NAME'],right_on=['SITE_RSVIVO'])
+frameSI = frameSI.drop(['SITE_RSVIVO'], axis=1)
+
+
+
 #Verificar se o novo 4G- tem trafrego
 frameSI['MobileTemp4G'] = '4G-'+frameSI['SHORT'].astype(str)
 
-MS2 = MS.copy()
+MS2 = MS_2.copy()
 
 KeepListCompared = ['SITE_MicroStrategy','STATUS_MicroStrategy']
 locationBase_comparePMO = list(MS2.columns)
@@ -124,8 +142,8 @@ MS2.rename(columns={'SITE_MicroStrategy':'SITE_MicroStrategy2','STATUS_MicroStra
 frameSI = pd.merge(frameSI,MS2, how='left',left_on=['MobileTemp4G'],right_on=['SITE_MicroStrategy2'])
 frameSI = frameSI.drop(['SITE_MicroStrategy2'], axis=1)
 
-
-frameSI.to_csv(csv_path,index=False,header=True,encoding='ANSI',sep=';')
+csv_path2 = os.path.join(script_dir, 'export/'+'MERGE'+'.csv')
+frameSI.to_csv(csv_path2,index=False,header=True,encoding='ANSI',sep=';')
 
 Analise.processArchive()
 
